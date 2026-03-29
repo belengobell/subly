@@ -3,8 +3,8 @@ import { useState, useCallback, useEffect } from "react";
 // ============================================================
 //  SUPABASE CONFIG
 // ============================================================
-const SUPABASE_URL = "https://nlhkxdbopmckkqydtnbx.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5saGt4ZGJvcG1ja2txeWR0bmJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzUxMjEsImV4cCI6MjA5MDA1MTEyMX0.AhSmmNkW-EYli1xlCFucLeIgi2Zf7xjilru7bEwf_88";
+const SUPABASE_URL = "https://gaqsawnujundgpfqcjdb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcXNhd251anVuZGdwZnFjamRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTczMDUsImV4cCI6MjA5MDM3MzMwNX0.VEgYB5WZ36A2ehDNahv1fnxZZ7_2ew_DGmt8y3LTUd8";
 
 // Minimal Supabase client (no npm needed)
 const sb = {
@@ -633,7 +633,6 @@ function AuthScreen({ onLogin }) {
         <div className="fg"><label className="fl">Password</label><input className="fi" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(tab==="login"?doLogin():doRegister())}/></div>
         {error&&<div className="auth-err">{error}</div>}
         <button className="btn-primary" disabled={loading} onClick={tab==="login"?doLogin:doRegister}>{loading?"Caricamento…":tab==="login"?"Accedi":"Crea account"}</button>
-        <div className="auth-info"><strong>Account admin:</strong> belen_gobell@hotmail.com · lucaocean@hotmail.it<br/>Registrati con queste email per accedere al pannello Admin.</div>
       </div>
     </div>
   );

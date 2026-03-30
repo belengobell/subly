@@ -785,74 +785,124 @@ function SavingsPage({ subs, user }) {
     "Elaboro i suggerimenti personalizzati...",
   ];
 
-  async function runAnalysis() {
+  function runAnalysis() {
     if (mySubs.length === 0) return;
     setLoading(true);
     setAnalysis(null);
     let i = 0;
     setLoadingMsg(msgs[0]);
-    const interval = setInterval(() => { i=(i+1)%msgs.length; setLoadingMsg(msgs[i]); }, 2200);
+    const interval = setInterval(() => { i=(i+1)%msgs.length; setLoadingMsg(msgs[i]); }, 800);
 
-    const subsText = mySubs.map(s => {
-      const monthly = toMonthly(s.cost, s.frequency);
-      const usage = USAGE_LABELS[s.usage_level] || "non specificato";
-      return `- ${s.name} (${getCatInfo(s.category).label}): €${monthly.toFixed(2)}/mese, utilizzo: ${usage}`;
-    }).join("\n");
+    // Benchmark prezzi mercato italiano 2025
+    const BENCHMARKS = {
+      entertainment: {
+        "Netflix":         { ok:17.99, alternatives:[{name:"Disney+",price:13.99,desc:"Film e serie simili"},{name:"NOW TV",price:6.99,desc:"Piano cinema base"}] },
+        "Disney+":         { ok:13.99, alternatives:[{name:"NOW TV",price:6.99,desc:"Contenuti simili"},{name:"Amazon Prime Video",price:4.99,desc:"Incluso con Prime"}] },
+        "Prime Video":     { ok:4.99,  alternatives:[] },
+        "Spotify":         { ok:10.99, alternatives:[{name:"Apple Music",price:10.99,desc:"Stesso prezzo, qualità Lossless"},{name:"YouTube Music",price:9.99,desc:"Risparmio minimo"}] },
+        "Apple Music":     { ok:10.99, alternatives:[{name:"Spotify",price:10.99,desc:"Stesso prezzo, più podcast"}] },
+        "YouTube Premium": { ok:13.99, alternatives:[{name:"Spotify",price:10.99,desc:"Solo musica, più economico"}] },
+        "DAZN":            { ok:40.99, alternatives:[{name:"Sky Sport",price:19.90,desc:"Calcio Serie A incluso"},{name:"NOW Sport",price:14.99,desc:"Partite selezionate"}] },
+        "Sky":             { ok:19.90, alternatives:[{name:"NOW TV",price:14.99,desc:"Stesso contenuto, più flessibile"}] },
+        "NOW TV":          { ok:14.99, alternatives:[] },
+        "Audible":         { ok:9.99,  alternatives:[{name:"Storytel",price:9.99,desc:"Stesso prezzo, più titoli italiani"}] },
+      },
+      news: {
+        "Corriere della Sera": { ok:9.99,  alternatives:[{name:"La Repubblica",price:7.99,desc:"Risparmio €2/mese"}] },
+        "La Repubblica":       { ok:7.99,  alternatives:[] },
+        "Il Sole 24 Ore":      { ok:19.99, alternatives:[{name:"Corriere della Sera",price:9.99,desc:"Notizie generali a metà prezzo"}] },
+        "La Stampa":           { ok:6.99,  alternatives:[] },
+      },
+      apps: {
+        "iCloud+ 50GB":    { ok:0.99,  alternatives:[] },
+        "iCloud+ 200GB":   { ok:2.99,  alternatives:[{name:"Google One 100GB",price:1.99,desc:"Risparmio €1/mese"}] },
+        "iCloud+ 2TB":     { ok:9.99,  alternatives:[{name:"Google One 2TB",price:9.99,desc:"Stesso prezzo, multi-device"}] },
+        "Google One 100GB":{ ok:1.99,  alternatives:[] },
+        "Microsoft 365":   { ok:8.25,  alternatives:[{name:"Google Workspace",price:6.00,desc:"Suite completa online"}] },
+        "Adobe Creative":  { ok:54.99, alternatives:[{name:"Affinity Suite",price:16.99,desc:"Alternativa professionale una tantum"}] },
+        "ChatGPT Plus":    { ok:20.00, alternatives:[{name:"Claude Pro",price:18.00,desc:"Capacità simili, prezzo inferiore"}] },
+        "Canva Pro":       { ok:12.99, alternatives:[] },
+        "Dropbox Plus":    { ok:11.99, alternatives:[{name:"iCloud+ 200GB",price:2.99,desc:"Se usi Apple, molto più economico"}] },
+      },
+      utilities: {
+        "Enel Energia":    { ok:75.00, alternatives:[{name:"Octopus Energy",price:65.00,desc:"Tariffe variabili competitive"},{name:"Illumia",price:68.00,desc:"Offerte luce gas combinate"}] },
+        "Eni gas e luce":  { ok:72.00, alternatives:[{name:"Octopus Energy",price:65.00,desc:"Tariffe più competitive"}] },
+        "Fastweb Fibra":   { ok:27.95, alternatives:[{name:"WINDTRE Casa",price:24.99,desc:"Risparmio €3/mese"},{name:"TIM Fibra",price:24.90,desc:"Stessa velocità"}] },
+        "TIM Fibra":       { ok:24.90, alternatives:[{name:"WINDTRE Casa",price:24.99,desc:"Prezzo simile"},{name:"Fastweb",price:27.95,desc:"Servizio clienti migliore"}] },
+        "WINDTRE Casa":    { ok:24.99, alternatives:[{name:"TIM Fibra",price:24.90,desc:"Risparmio minimo"}] },
+        "Iliad Mobile":    { ok:9.99,  alternatives:[] },
+        "Vodafone Mobile": { ok:12.99, alternatives:[{name:"Iliad",price:9.99,desc:"Stessa rete, risparmio €3/mese"},{name:"ho.",price:8.99,desc:"MVNO Vodafone più economico"}] },
+      },
+      insurance: {
+        "RC Auto":            { ok:350.00, alternatives:[{name:"Comparazione online",price:280.00,desc:"Confronta su Facile.it o Segugio.it"}] },
+        "Assicurazione Casa": { ok:200.00, alternatives:[{name:"Comparazione online",price:150.00,desc:"Confronta su Segugio.it"}] },
+        "Mutua Sanitaria":    { ok:30.00,  alternatives:[] },
+        "UniSalute":          { ok:25.00,  alternatives:[] },
+      },
+    };
 
-    const prompt = `Sei un consulente finanziario esperto di abbonamenti e spese ricorrenti in Italia.
+    setTimeout(() => {
+      const items = mySubs.map(sub => {
+        const monthly = toMonthly(sub.cost, sub.frequency);
+        const usage = sub.usage_level || 3;
+        const cat = sub.category;
+        const bench = BENCHMARKS[cat]?.[sub.name];
+        const okPrice = bench?.ok || monthly;
+        const alts = bench?.alternatives || [];
+        const emoji = sub.emoji || getCatInfo(cat).icon;
 
-L'utente ha questi abbonamenti/spese ricorrenti (costi già convertiti in mensile):
-${subsText}
+        // Low usage: suggest cancellation
+        if (usage <= 2) {
+          return {
+            name: sub.name, emoji, currentCost: monthly,
+            status: "cancel",
+            insight: `Stai usando "${sub.name}" ${usage === 1 ? "quasi mai" : "poco"}. Paghi €${monthly.toFixed(2)}/mese per un servizio che usi raramente — considera di cancellare e risparmiare €${(monthly * 12).toFixed(0)} all'anno.`,
+            alternatives: [],
+            savingMonth: monthly,
+          };
+        }
 
-Totale mensile: €${totalMonthly.toFixed(2)}
+        // Price above benchmark
+        if (monthly > okPrice * 1.15 && alts.length > 0) {
+          const bestAlt = alts[0];
+          const saving = monthly - bestAlt.price;
+          return {
+            name: sub.name, emoji, currentCost: monthly,
+            status: "warn",
+            insight: `Stai pagando €${monthly.toFixed(2)}/mese, leggermente sopra la media di mercato italiana (€${okPrice.toFixed(2)}/mese). Esistono alternative valide che potrebbero farti risparmiare.`,
+            alternatives: alts.map(a => ({...a, saving: parseFloat((monthly - a.price).toFixed(2))})),
+            savingMonth: parseFloat(saving.toFixed(2)),
+          };
+        }
 
-Analizza OGNI abbonamento e fornisci una risposta in formato JSON con questa struttura esatta:
-{
-  "totalSaving": 45.50,
-  "items": [
-    {
-      "name": "Netflix",
-      "emoji": "🎬",
-      "currentCost": 17.99,
-      "status": "save",
-      "badge": "💰 Puoi risparmiare",
-      "insight": "Breve analisi del servizio e confronto con il mercato italiano attuale.",
-      "alternatives": [
-        { "name": "NOW TV", "price": 6.99, "saving": 11.00, "desc": "Piano base con contenuti simili" }
-      ],
-      "savingMonth": 11.00
-    }
-  ]
-}
+        // Has cheaper alternatives
+        if (alts.length > 0 && alts[0].price < monthly * 0.9) {
+          const bestAlt = alts[0];
+          const saving = monthly - bestAlt.price;
+          return {
+            name: sub.name, emoji, currentCost: monthly,
+            status: "save",
+            insight: `"${sub.name}" ha un prezzo in linea con il mercato (€${okPrice.toFixed(2)}/mese) ma esistono alternative più economiche con funzionalità simili disponibili in Italia.`,
+            alternatives: alts.map(a => ({...a, saving: parseFloat((monthly - a.price).toFixed(2))})).filter(a => a.saving > 0),
+            savingMonth: parseFloat(saving.toFixed(2)),
+          };
+        }
 
-Regole importanti:
-- status può essere: "save" (si può risparmiare), "ok" (prezzo in linea con mercato), "cancel" (utilizzo basso, considera cancellazione), "warn" (prezzo sopra media)
-- Per utilizzo 1-2 (Quasi mai/Poco): suggerisci sempre cancellazione con quanto si risparmia
-- Per utilizzo 3-5 (A volte/Spesso/Ogni giorno): confronta con alternative più economiche italiane
-- Le alternative devono essere servizi REALI disponibili in Italia con prezzi reali 2024-2025
-- totalSaving è il risparmio mensile totale se accetta tutti i suggerimenti
-- Rispondi SOLO con il JSON, nessun testo aggiuntivo`;
-
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt }]
-        })
+        // Price is ok
+        return {
+          name: sub.name, emoji, currentCost: monthly,
+          status: "ok",
+          insight: `"${sub.name}" è a un prezzo competitivo rispetto al mercato italiano (benchmark: €${okPrice.toFixed(2)}/mese). Nessun intervento necessario.`,
+          alternatives: [],
+          savingMonth: 0,
+        };
       });
-      const data = await res.json();
-      const text = data.content?.map(c => c.text||"").join("") || "";
-      const clean = text.replace(/```json|```/g,"").trim();
-      const parsed = JSON.parse(clean);
-      setAnalysis(parsed);
-    } catch(e) {
-      console.error(e);
-    }
-    clearInterval(interval);
-    setLoading(false);
+
+      const totalSaving = items.reduce((a, item) => a + (item.savingMonth || 0), 0);
+      clearInterval(interval);
+      setAnalysis({ totalSaving: parseFloat(totalSaving.toFixed(2)), items });
+      setLoading(false);
+    }, 3000);
   }
 
   const statusBadge = s => {

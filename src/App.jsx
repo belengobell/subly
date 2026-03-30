@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+IMPORT { useState, useCallback, useEffect } from "react";
 
 // ============================================================
 //  SUPABASE CONFIG
@@ -137,7 +137,7 @@ const POPULAR_SERVICES = [
 ];
 
 const MEMBER_COLORS  = ["#29ABE2","#EC4899","#10B981","#F59E0B","#3B82F6","#8B5CF6"];
-const MEMBER_AVATARS = ["👨","👩","🧒","👴","👵","🧑"];
+
 
 const USAGE_LABELS = ["","Quasi mai","Poco","A volte","Spesso","Ogni giorno"];
 const USAGE_CONFIG = [
@@ -157,6 +157,7 @@ function getFreqLabel(f)       { const x=FREQUENCIES.find(v=>v.id===f); return x
 function getCatInfo(id)        { return CATEGORIES.find(c=>c.id===id)||{icon:"📦",label:"Altro"}; }
 function getInitials(name)     { return (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
 function fmtDate(d)            { return d?new Date(d).toLocaleDateString("it-IT"):"—"; }
+function genFamilyCode(name)   { return name.toUpperCase().replace(/[^A-Z]/g,"").slice(0,5) + "-" + Math.floor(1000+Math.random()*9000); }
 const SLIDER_TABS = ["Tutti",...CATEGORIES.map(c=>c.label)];
 
 // ─── CSV EXPORT ───────────────────────────────────────────────
@@ -251,11 +252,17 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .m-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
 .m-name{font-size:12px;color:var(--text2);font-weight:500;}
 .m-role{font-size:10px;color:var(--text3);}
-.s-user{margin-top:auto;padding:12px;background:var(--sur2);border-radius:12px;display:flex;align-items:center;gap:10px;}
-.u-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:#fff;}
-.u-name{font-size:13px;font-weight:600;color:var(--text);}
-.u-email{font-size:10px;color:var(--text3);}
-.logout-btn{margin-left:auto;padding:5px 10px;border-radius:7px;border:1px solid var(--bor2);background:transparent;color:var(--text3);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:all .2s;white-space:nowrap;}
+.s-user{margin-top:auto;padding:10px;background:var(--sur2);border-radius:12px;display:flex;align-items:center;gap:8px;min-width:0;}
+.u-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff;}
+.u-info{flex:1;min-width:0;overflow:hidden;}
+.u-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.u-email{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.logout-btn{
+  margin-left:auto;padding:5px 10px;border-radius:7px;border:1.5px solid var(--bor2);
+  background:var(--sur2);color:var(--text2);font-size:11px;cursor:pointer;
+  font-family:'Inter',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;
+  flex-shrink:0;
+}
 .logout-btn:hover{border-color:var(--red);color:var(--red);background:#FFF1F2;}
 
 /* MAIN */
@@ -296,6 +303,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .sub-cost{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.5px;}
 .sub-freq{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500;}
 .sub-eq{font-size:10px;color:var(--indigo);margin-top:1px;font-weight:500;}
+.sub-card:hover .edit-hint{opacity:1;}
+.edit-hint{opacity:0;font-size:10px;color:var(--indigo);font-weight:600;transition:opacity .2s;white-space:nowrap;}
 .acts{display:flex;gap:6px;}
 .ic-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bor);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;}
 .ic-btn:hover{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-l);}
@@ -448,6 +457,43 @@ tr:hover td{background:var(--sur2);}
 .confirm-row{display:flex;gap:8px;justify-content:center;}
 .btn-danger{padding:9px 20px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
 .btn-danger:hover{background:#E11D48;}
+/* SAVINGS PAGE */
+.savings-hero{background:linear-gradient(135deg,var(--indigo-l) 0%,#F0FDF9 100%);border:1.5px solid rgba(41,171,226,.2);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.savings-hero-icon{font-size:40px;flex-shrink:0;}
+.savings-hero-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-0.3px;}
+.savings-hero-sub{font-size:13px;color:var(--text2);line-height:1.5;}
+.btn-analyze{padding:12px 28px;background:var(--indigo);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;}
+.btn-analyze:hover{background:var(--indigo2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(41,171,226,.3);}
+.btn-analyze:disabled{background:var(--bor2);color:var(--text3);cursor:not-allowed;transform:none;box-shadow:none;}
+.analysis-loading{text-align:center;padding:60px 20px;}
+.analysis-loading .spinner{margin:0 auto 16px;}
+.analysis-loading-txt{font-size:14px;color:var(--text2);font-weight:600;}
+.analysis-loading-sub{font-size:12px;color:var(--text3);margin-top:6px;}
+.analysis-wrap{display:flex;flex-direction:column;gap:14px;}
+.analysis-card{background:var(--white);border:1px solid var(--bor);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.ac-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.ac-emoji{font-size:26px;flex-shrink:0;}
+.ac-name{font-size:15px;font-weight:700;color:var(--text);}
+.ac-cost{font-size:12px;color:var(--text3);margin-top:2px;}
+.ac-badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;margin-left:auto;white-space:nowrap;}
+.badge-save{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.badge-ok{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;}
+.badge-cancel{background:#FFF1F2;color:#9F1239;border:1px solid #FECDD3;}
+.badge-warn{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
+.ac-insight{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.ac-alternatives{display:flex;flex-direction:column;gap:8px;}
+.alt-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--sur2);border-radius:10px;border:1px solid var(--bor);gap:12px;flex-wrap:wrap;}
+.alt-name{font-size:13px;font-weight:600;color:var(--text);}
+.alt-desc{font-size:11px;color:var(--text3);margin-top:2px;}
+.alt-saving{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;}
+.ac-saving-total{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#ECFDF5;border-radius:10px;margin-top:10px;border:1px solid #A7F3D0;}
+.ast-label{font-size:12px;color:#065F46;font-weight:600;}
+.ast-val{font-size:16px;font-weight:700;color:#065F46;margin-left:auto;}
+.savings-summary{background:var(--indigo);border-radius:var(--radius);padding:20px 24px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.ss-icon{font-size:32px;}
+.ss-title{font-size:13px;font-weight:600;opacity:.85;margin-bottom:4px;}
+.ss-val{font-size:28px;font-weight:700;letter-spacing:-1px;}
+.ss-sub{font-size:12px;opacity:.7;margin-top:3px;}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:500;color:#fff;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:var(--shadow-lg);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 @media(max-width:720px){
@@ -467,7 +513,7 @@ tr:hover td{background:var(--sur2);}
 function ServiceSlider({ onSelect, selectedName }) {
   const [tab, setTab] = useState("Tutti");
   const filtered = tab==="Tutti" ? POPULAR_SERVICES : POPULAR_SERVICES.filter(s=>{const c=CATEGORIES.find(x=>x.label===tab);return c&&s.category===c.id;});
-  const fs = f => f==="monthly"?"/mes":f==="yearly"?"/anno":"/trim";
+  const fs = f => f==="monthly"?"/mese":f==="yearly"?"/anno":"/trimestre";
   return (
     <div>
       <div className="sl-lbl">Servizi popolari in Italia</div>
@@ -516,8 +562,8 @@ function SubModal({ onClose, onSave, onDelete, editSub, currentUser, familyMembe
   return (
     <div className="overlay" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
       <div className="modal">
-        <div className="modal-title">{editSub?"Modifica abbonamento":"Nuovo abbonamento"}</div>
-        <div className="modal-sub">{editSub?"Aggiorna i dettagli":"Scegli tra i più popolari o aggiungi manualmente"}</div>
+        <div className="modal-title">{editSub?"Modifica spesa ricorrente":"Nuova spesa ricorrente"}</div>
+        <div className="modal-sub">{editSub?"Aggiorna i dettagli":"Abbonamento, utenza, assicurazione o qualsiasi spesa fissa"}</div>
         {!editSub&&<div className="steps"><div className={"sdot"+(!hasSelected?" active":" done")}/><div className={"sdot"+(hasSelected?" active":"")}/><span className="slbl">{!hasSelected?"Scegli servizio":"Dettagli"}</span></div>}
         {!editSub&&!hasSelected&&<ServiceSlider onSelect={pickService} selectedName={sel?sel.name:null}/>}
         {(editSub||hasSelected)&&(
@@ -539,7 +585,7 @@ function SubModal({ onClose, onSave, onDelete, editSub, currentUser, familyMembe
               <div className="fl">Metodo di pagamento <span style={{textTransform:"none",letterSpacing:0,color:"var(--text3)",fontWeight:400}}>(opzionale)</span></div>
               <select className="msel" value={form.payment} onChange={e=>setF({payment:e.target.value})}><option value="">— Non specificato —</option>{PAYMENT_METHODS.map(m=><option key={m} value={m}>{m}</option>)}</select>
             </div>
-            {familyMembers.length>1&&<div className="mb"><div className="fl">Intestato a</div><div className="owner-picker">{familyMembers.map(m=><button key={m.id} className={"owner-opt"+(form.ownerId===m.id?" on":"")} onClick={()=>setF({ownerId:m.id})}><span className="owner-av" style={{background:m.color||"#29ABE2"}}>{m.avatar||"👤"}</span>{m.id===currentUser.id?"Tu":m.name?.split(" ")[0]}</button>)}</div></div>}
+            {familyMembers.length>1&&<div className="mb"><div className="fl">Intestato a</div><div className="owner-picker">{familyMembers.map(m=><button key={m.id} className={"owner-opt"+(form.ownerId===m.id?" on":"")} onClick={()=>setF({ownerId:m.id})}><span className="owner-av" style={{background:m.color||"#29ABE2",color:"#fff",fontSize:10,fontWeight:700}}>{getInitials(m.name||"?")}</span>{m.id===currentUser.id?"Tu":m.name?.split(" ")[0]}</button>)}</div></div>}
             <div className="mb">
               <div className="fl">Utilizzo <span style={{textTransform:"none",letterSpacing:0,color:"var(--text3)",fontWeight:400}}>— quanto lo usate?</span></div>
               <div className="usage-picker">{USAGE_CONFIG.map(u=><div key={u.val} className={"usage-opt"+(form.usage_level===u.val?" on":"")} onClick={()=>setF({usage_level:u.val})}><span className="uo-emoji">{u.emoji}</span><span className="uo-num">{u.val}</span><span className="uo-lbl">{u.short}</span></div>)}</div>
@@ -570,6 +616,8 @@ function AuthScreen({ onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   async function doLogin() {
     setLoading(true); setError("");
@@ -584,7 +632,7 @@ function AuthScreen({ onLogin }) {
     let profile = Array.isArray(profiles) && profiles[0];
     if (!profile) {
       const idx = Math.floor(Math.random() * MEMBER_COLORS.length);
-      const inserted = await sb.insert("profiles", { id:res.user.id, name:res.user.user_metadata?.name||email.split("@")[0], email, role:isSA?"superadmin":"admin", color:MEMBER_COLORS[idx], avatar:MEMBER_AVATARS[idx], plan:"free" }, token);
+      const inserted = await sb.insert("profiles", { id:res.user.id, name:res.user.user_metadata?.name||email.split("@")[0], email, role:isSA?"superadmin":"admin", color:MEMBER_COLORS[idx], plan:"free" }, token);
       profile = Array.isArray(inserted) ? inserted[0] : inserted;
     }
     onLogin({ ...profile, token, isSuperAdmin: isSA });
@@ -594,27 +642,13 @@ function AuthScreen({ onLogin }) {
   async function doRegister() {
     if (!name.trim()||!email.trim()||!password.trim()) { setError("Compila tutti i campi."); return; }
     if (password.length < 6) { setError("La password deve avere almeno 6 caratteri."); return; }
+    if (!acceptedTerms) { setError("Devi accettare i Termini e Condizioni per continuare."); return; }
     setLoading(true); setError("");
     const res = await sb.signUp(email, password, name);
     if (res.error) { setError(res.error.message); setLoading(false); return; }
-    // Auto-login right after signup (email confirm is disabled)
-    const loginRes = await sb.signIn(email, password);
-    if (loginRes.error) {
-      setError("Account creato! Ora accedi con le tue credenziali.");
-      setTab("login"); setLoading(false); return;
-    }
-    const token = loginRes.access_token;
-    const admins = await sb.select("super_admins", `email=eq.${email}`);
-    const isSA = Array.isArray(admins) && admins.length > 0;
-    const idx = Math.floor(Math.random() * MEMBER_COLORS.length);
-    const inserted = await sb.insert("profiles", {
-      id: loginRes.user.id, name, email,
-      role: isSA ? "superadmin" : "admin",
-      color: MEMBER_COLORS[idx], avatar: MEMBER_AVATARS[idx], plan: "free"
-    }, token);
-    const profile = Array.isArray(inserted) ? inserted[0] : inserted;
-    onLogin({ ...(profile || {}), id: loginRes.user.id, name, email, token, isSuperAdmin: isSA, color: MEMBER_COLORS[idx], avatar: MEMBER_AVATARS[idx] });
     setLoading(false);
+    setTab("login");
+    setError("✅ Registrazione completata! Controlla la tua email e clicca il link di conferma prima di accedere.");
   }
 
   const sw = t => { setTab(t); setError(""); };
@@ -631,8 +665,61 @@ function AuthScreen({ onLogin }) {
         {tab==="register"&&<div className="fg"><label className="fl">Nome completo</label><input className="fi" placeholder="Mario Rossi" value={name} onChange={e=>setName(e.target.value)}/></div>}
         <div className="fg"><label className="fl">Email</label><input className="fi" type="email" placeholder="mario@esempio.it" value={email} onChange={e=>setEmail(e.target.value)}/></div>
         <div className="fg"><label className="fl">Password</label><input className="fi" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(tab==="login"?doLogin():doRegister())}/></div>
-        {error&&<div className="auth-err">{error}</div>}
-        <button className="btn-primary" disabled={loading} onClick={tab==="login"?doLogin:doRegister}>{loading?"Caricamento…":tab==="login"?"Accedi":"Crea account"}</button>
+        {error&&<div className="auth-err" style={{background: error.startsWith("✅") ? "#ECFDF5" : "#FFF1F2", color: error.startsWith("✅") ? "#065F46" : "var(--red)", border: error.startsWith("✅") ? "1px solid #A7F3D0" : "none"}}>{error}</div>}
+        {tab==="register"&&(
+          <div style={{display:"flex",alignItems:"flex-start",gap:10,margin:"4px 0 12px",padding:"12px 14px",background:"var(--sur2)",borderRadius:10,border:"1.5px solid var(--bor)"}}>
+            <input type="checkbox" id="terms" checked={acceptedTerms} onChange={e=>setAcceptedTerms(e.target.checked)}
+              style={{marginTop:2,accentColor:"var(--indigo)",width:16,height:16,flexShrink:0,cursor:"pointer"}}/>
+            <label htmlFor="terms" style={{fontSize:12,color:"var(--text2)",lineHeight:1.5,cursor:"pointer"}}>
+              Ho letto e accetto i{" "}
+              <span onClick={e=>{e.preventDefault();setShowTerms(true);}} style={{color:"var(--indigo)",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3,cursor:"pointer"}}>
+                Termini e Condizioni
+              </span>
+              {" "}e la{" "}
+              <span onClick={e=>{e.preventDefault();setShowTerms(true);}} style={{color:"var(--indigo)",fontWeight:600,textDecoration:"underline",textUnderlineOffset:3,cursor:"pointer"}}>
+                Privacy Policy
+              </span>
+            </label>
+          </div>
+        )}
+        <button className="btn-primary" disabled={loading||(tab==="register"&&!acceptedTerms)} onClick={tab==="login"?doLogin:doRegister}>{loading?"Caricamento…":tab==="login"?"Accedi":"Crea account"}</button>
+
+        {showTerms&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(26,29,46,.6)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:20}}>
+            <div style={{background:"#fff",borderRadius:20,padding:32,width:"100%",maxWidth:540,maxHeight:"85vh",overflowY:"auto",boxShadow:"0 8px 40px rgba(26,29,46,.15)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div style={{fontSize:18,fontWeight:700,color:"var(--text)"}}>Termini e Condizioni — Privacy Policy</div>
+                <button onClick={()=>setShowTerms(false)} style={{border:"none",background:"none",fontSize:20,cursor:"pointer",color:"var(--text3)",padding:4}}>✕</button>
+              </div>
+              <div style={{fontSize:12,color:"var(--text3)",marginBottom:20}}>Ultimo aggiornamento: marzo 2025</div>
+
+              {[
+                { title:"1. Chi siamo e a chi si rivolge questo servizio", text:"Subly è uno strumento digitale gratuito offerto ai clienti da un professionista del settore finanziario (private banker) per facilitare la gestione personale degli abbonamenti. Il servizio non ha scopo commerciale e viene messo a disposizione gratuitamente." },
+                { title:"2. Dati raccolti", text:"Per utilizzare Subly raccogliamo: nome e cognome, indirizzo email, dati sugli abbonamenti inseriti (nome servizio, costo, frequenza), dati facoltativi come metodo di pagamento e membri della famiglia. Non raccogliamo dati bancari, carte di credito o informazioni finanziarie sensibili." },
+                { title:"3. Come utilizziamo i tuoi dati", text:"I tuoi dati vengono utilizzati esclusivamente per: permetterti di accedere al tuo account personale, mostrarti il riepilogo dei tuoi abbonamenti, condividere informazioni con i membri della famiglia da te invitati. I tuoi dati non vengono venduti, ceduti o condivisi con terze parti per scopi commerciali." },
+                { title:"4. Base giuridica (GDPR)", text:"Il trattamento dei tuoi dati si basa sul tuo consenso esplicito (art. 6 par. 1 lett. a GDPR), che presti accettando questi termini al momento della registrazione. Puoi revocare il consenso in qualsiasi momento richiedendo la cancellazione del tuo account." },
+                { title:"5. Conservazione dei dati", text:"I tuoi dati vengono conservati finché mantieni un account attivo su Subly. Puoi richiedere la cancellazione dei tuoi dati in qualsiasi momento contattandoci. In caso di inattività superiore a 24 mesi, l'account potrà essere cancellato automaticamente." },
+                { title:"6. I tuoi diritti", text:"Ai sensi del GDPR hai diritto di: accedere ai tuoi dati personali, correggerli o aggiornarli, richiederne la cancellazione (diritto all'oblio), opporti al trattamento, richiedere la portabilità dei dati. Per esercitare questi diritti contatta il responsabile del servizio." },
+                { title:"7. Sicurezza", text:"I dati sono archiviati su infrastrutture sicure (Supabase) con cifratura in transito e a riposo. Non siamo responsabili per accessi non autorizzati derivanti da negligenza dell'utente (es. condivisione della password)." },
+                { title:"8. Modifiche ai termini", text:"Ci riserviamo il diritto di aggiornare questi termini. In caso di modifiche sostanziali, gli utenti verranno informati via email. L'uso continuato del servizio dopo la notifica costituisce accettazione dei nuovi termini." },
+              ].map(s=>(
+                <div key={s.title} style={{marginBottom:18}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:6}}>{s.title}</div>
+                  <div style={{fontSize:13,color:"var(--text2)",lineHeight:1.7}}>{s.text}</div>
+                </div>
+              ))}
+
+              <div style={{marginTop:24,padding:"14px 16px",background:"var(--indigo-l)",borderRadius:10,fontSize:12,color:"var(--text2)",lineHeight:1.6}}>
+                Per qualsiasi domanda relativa alla privacy scrivi a <strong style={{color:"var(--indigo)"}}>belen_gobell@hotmail.com</strong>
+              </div>
+
+              <button onClick={()=>{setAcceptedTerms(true);setShowTerms(false);}}
+                style={{width:"100%",marginTop:20,padding:13,background:"var(--indigo)",color:"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>
+                Ho letto e accetto ✓
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -667,7 +754,7 @@ function AdminPage({ allUsers, allSubs, token }) {
         <div className="admin-table-wrap">
           <div className="admin-table-header"><span className="admin-table-title">Utenti registrati</span><span className="admin-table-count">{allUsers.length} utenti</span></div>
           <div style={{overflowX:"auto"}}><table><thead><tr><th>Utente</th><th>Email</th><th>Piano</th><th>Ruolo</th><th>Registrato</th><th>Abbonamenti</th><th>€/mese</th></tr></thead>
-          <tbody>{allUsers.map(u=>{const uS=allSubs.filter(s=>s.owner_id===u.id);const m=uS.reduce((a,s)=>a+toMonthly(s.cost,s.frequency),0);return(<tr key={u.id}><td><div className="u-chip"><div className="u-av-sm" style={{background:u.color||"#29ABE2",color:"#fff",fontSize:11,fontWeight:700}}>{getInitials(u.name)}</div><span className="td-name">{u.name}</span></div></td><td>{u.email}</td><td><span className={"plan-badge "+(u.plan==="pro"?"plan-pro":"plan-free")}>{u.plan||"free"}</span></td><td><span className={"plan-badge "+(u.role==="superadmin"?"role-sa":"plan-free")}>{u.role}</span></td><td>{fmtDate(u.created_at)}</td><td style={{fontWeight:600}}>{uS.length}</td><td style={{color:"var(--indigo)",fontWeight:600}}>€{m.toFixed(2)}</td></tr>);})}</tbody></table></div>
+          <tbody>{allUsers.map(u=>{const uS=allSubs.filter(s=>s.owner_id===u.id);const m=uS.reduce((a,s)=>a+toMonthly(s.cost,s.frequency),0);return(<tr key={u.id}><td><div className="u-chip"><div className="u-av-sm" style={{background:u.color||"#29ABE2",color:"#fff",fontSize:10,fontWeight:700}}>{getInitials(u.name)}</div><span className="td-name">{u.name}</span></div></td><td>{u.email}</td><td><span className={"plan-badge "+(u.plan==="pro"?"plan-pro":"plan-free")}>{u.plan||"free"}</span></td><td><span className={"plan-badge "+(u.role==="superadmin"?"role-sa":"plan-free")}>{u.role}</span></td><td>{fmtDate(u.created_at)}</td><td style={{fontWeight:600}}>{uS.length}</td><td style={{color:"var(--indigo)",fontWeight:600}}>€{m.toFixed(2)}</td></tr>);})}</tbody></table></div>
         </div>
       )}
       {tab==="subs"&&(
@@ -677,6 +764,245 @@ function AdminPage({ allUsers, allSubs, token }) {
           <tbody>{allSubs.map(s=>{const cat=getCatInfo(s.category);const cc=CAT_COLORS[s.category]||CAT_COLORS.other;const owner=allUsers.find(u=>u.id===s.owner_id);const uc=getUsageCfg(s.usage_level);return(<tr key={s.id}><td><div className="u-chip"><span style={{fontSize:16}}>{s.emoji||cat.icon}</span><span className="td-name">{s.name}</span></div></td><td><span className="cat-pill" style={{background:cc.bg,color:cc.text}}>{cat.icon} {cat.label}</span></td><td style={{fontWeight:600}}>€{Number(s.cost).toFixed(2)}</td><td>{getFreqLabel(s.frequency)}</td><td style={{color:"var(--indigo)",fontWeight:600}}>€{toMonthly(s.cost,s.frequency).toFixed(2)}</td><td><span style={{color:uc.color,fontWeight:600}}>{uc.emoji} {uc.short}</span></td><td>{owner?owner.name:"—"}</td></tr>);})}</tbody></table></div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── SAVINGS PAGE ─────────────────────────────────────────────
+
+function SavingsPage({ subs, user }) {
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
+
+  const mySubs = subs.filter(s => s.owner_id === user.id);
+  const totalMonthly = mySubs.reduce((a,s) => a + toMonthly(s.cost, s.frequency), 0);
+
+  const msgs = [
+    "Analizzo i tuoi abbonamenti...",
+    "Cerco alternative più convenienti...",
+    "Calcolo il potenziale risparmio...",
+    "Elaboro i suggerimenti personalizzati...",
+  ];
+
+  async function runAnalysis() {
+    if (mySubs.length === 0) return;
+    setLoading(true);
+    setAnalysis(null);
+    let i = 0;
+    setLoadingMsg(msgs[0]);
+    const interval = setInterval(() => { i=(i+1)%msgs.length; setLoadingMsg(msgs[i]); }, 2200);
+
+    const subsText = mySubs.map(s => {
+      const monthly = toMonthly(s.cost, s.frequency);
+      const usage = USAGE_LABELS[s.usage_level] || "non specificato";
+      return `- ${s.name} (${getCatInfo(s.category).label}): €${monthly.toFixed(2)}/mese, utilizzo: ${usage}`;
+    }).join("\n");
+
+    const prompt = `Sei un consulente finanziario esperto di abbonamenti e spese ricorrenti in Italia.
+
+L'utente ha questi abbonamenti/spese ricorrenti (costi già convertiti in mensile):
+${subsText}
+
+Totale mensile: €${totalMonthly.toFixed(2)}
+
+Analizza OGNI abbonamento e fornisci una risposta in formato JSON con questa struttura esatta:
+{
+  "totalSaving": 45.50,
+  "items": [
+    {
+      "name": "Netflix",
+      "emoji": "🎬",
+      "currentCost": 17.99,
+      "status": "save",
+      "badge": "💰 Puoi risparmiare",
+      "insight": "Breve analisi del servizio e confronto con il mercato italiano attuale.",
+      "alternatives": [
+        { "name": "NOW TV", "price": 6.99, "saving": 11.00, "desc": "Piano base con contenuti simili" }
+      ],
+      "savingMonth": 11.00
+    }
+  ]
+}
+
+Regole importanti:
+- status può essere: "save" (si può risparmiare), "ok" (prezzo in linea con mercato), "cancel" (utilizzo basso, considera cancellazione), "warn" (prezzo sopra media)
+- Per utilizzo 1-2 (Quasi mai/Poco): suggerisci sempre cancellazione con quanto si risparmia
+- Per utilizzo 3-5 (A volte/Spesso/Ogni giorno): confronta con alternative più economiche italiane
+- Le alternative devono essere servizi REALI disponibili in Italia con prezzi reali 2024-2025
+- totalSaving è il risparmio mensile totale se accetta tutti i suggerimenti
+- Rispondi SOLO con il JSON, nessun testo aggiuntivo`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(c => c.text||"").join("") || "";
+      const clean = text.replace(/```json|```/g,"").trim();
+      const parsed = JSON.parse(clean);
+      setAnalysis(parsed);
+    } catch(e) {
+      console.error(e);
+    }
+    clearInterval(interval);
+    setLoading(false);
+  }
+
+  const statusBadge = s => {
+    if(s==="save")   return { cls:"badge-save", txt:"💰 Risparmio possibile" };
+    if(s==="ok")     return { cls:"badge-ok",   txt:"✅ Prezzo in linea" };
+    if(s==="cancel") return { cls:"badge-cancel",txt:"⚠️ Considera di cancellare" };
+    if(s==="warn")   return { cls:"badge-warn",  txt:"📈 Sopra la media" };
+    return { cls:"badge-ok", txt:"✅ Ok" };
+  };
+
+  return (
+    <div>
+      <div className="pg-eye">Analisi intelligente</div>
+      <div className="pg-title">Risparmio & Suggerimenti</div>
+
+      <div className="savings-hero">
+        <div className="savings-hero-icon">💡</div>
+        <div style={{flex:1}}>
+          <div className="savings-hero-title">Scopri quanto puoi risparmiare</div>
+          <div className="savings-hero-sub">
+            Analizzo i tuoi {mySubs.length} abbonamenti e li confronto con le migliori offerte disponibili in Italia.
+            Per chi usa poco un servizio suggerisco la cancellazione, per chi lo usa tanto cerco alternative più economiche.
+          </div>
+        </div>
+        <button className="btn-analyze" disabled={loading||mySubs.length===0} onClick={runAnalysis}>
+          {loading ? <><div className="spinner" style={{width:18,height:18,borderWidth:2,margin:0}}/> Analisi in corso</> : "🔍 Analizza ora"}
+        </button>
+      </div>
+
+      {mySubs.length===0 && (
+        <div className="empty"><div className="empty-ic">📋</div><div className="empty-txt">Aggiungi prima alcune spese ricorrenti dalla Dashboard</div></div>
+      )}
+
+      {loading && (
+        <div className="analysis-loading">
+          <div className="spinner"/>
+          <div className="analysis-loading-txt">{loadingMsg}</div>
+          <div className="analysis-loading-sub">Questo richiede circa 15-20 secondi</div>
+        </div>
+      )}
+
+      {analysis && !loading && (
+        <>
+          <div className="savings-summary">
+            <div className="ss-icon">🎯</div>
+            <div>
+              <div className="ss-title">Risparmio mensile potenziale</div>
+              <div className="ss-val">€{Number(analysis.totalSaving||0).toFixed(2)}</div>
+              <div className="ss-sub">€{(Number(analysis.totalSaving||0)*12).toFixed(0)} all'anno se applichi tutti i suggerimenti</div>
+            </div>
+            <button className="btn-analyze" style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"1.5px solid rgba(255,255,255,0.3)"}} onClick={runAnalysis}>
+              🔄 Rianalizza
+            </button>
+          </div>
+
+          <div className="analysis-wrap">
+            {(analysis.items||[]).map((item,i) => {
+              const badge = statusBadge(item.status);
+              return (
+                <div key={i} className="analysis-card">
+                  <div className="ac-header">
+                    <span className="ac-emoji">{item.emoji||"📦"}</span>
+                    <div>
+                      <div className="ac-name">{item.name}</div>
+                      <div className="ac-cost">€{Number(item.currentCost||0).toFixed(2)}/mese attuale</div>
+                    </div>
+                    <span className={"ac-badge "+badge.cls}>{badge.txt}</span>
+                  </div>
+
+                  <div className="ac-insight">{item.insight}</div>
+
+                  {item.status==="cancel" && item.savingMonth>0 && (
+                    <div className="ac-saving-total">
+                      <span style={{fontSize:20}}>💸</span>
+                      <span className="ast-label">Se cancelli questo abbonamento risparmi:</span>
+                      <span className="ast-val">+€{Number(item.savingMonth).toFixed(2)}/mese</span>
+                    </div>
+                  )}
+
+                  {item.alternatives && item.alternatives.length>0 && item.status!=="cancel" && (
+                    <>
+                      <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:".5px",color:"var(--text3)",marginBottom:8}}>
+                        Alternative più economiche
+                      </div>
+                      <div className="ac-alternatives">
+                        {item.alternatives.map((alt,j) => (
+                          <div key={j} className="alt-row">
+                            <div>
+                              <div className="alt-name">{alt.name} — €{Number(alt.price||0).toFixed(2)}/mese</div>
+                              <div className="alt-desc">{alt.desc}</div>
+                            </div>
+                            <div className="alt-saving">-€{Number(alt.saving||0).toFixed(2)}/mese</div>
+                          </div>
+                        ))}
+                      </div>
+                      {item.savingMonth>0 && (
+                        <div className="ac-saving-total">
+                          <span style={{fontSize:18}}>✨</span>
+                          <span className="ast-label">Risparmio massimo passando all'alternativa migliore:</span>
+                          <span className="ast-val">€{Number(item.savingMonth).toFixed(2)}/mese</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {item.status==="ok" && (
+                    <div style={{padding:"10px 14px",background:"#EFF6FF",borderRadius:10,fontSize:12,color:"#1E40AF",fontWeight:500,border:"1px solid #BFDBFE"}}>
+                      ✅ Sei in linea con i prezzi di mercato — nessun intervento necessario
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── FAMILY CODE BOX ─────────────────────────────────────────
+
+function FamilyCodeBox({ familyId, token, showToast }) {
+  const [code, setCode] = useState("");
+  const [famName, setFamName] = useState("");
+
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/families?id=eq.${familyId}`, {
+        headers: { "Content-Type":"application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (Array.isArray(data) && data[0]) { setCode(data[0].code || ""); setFamName(data[0].name || ""); }
+    }
+    if (familyId) load();
+  }, [familyId]);
+
+  function copyCode() {
+    navigator.clipboard?.writeText(code).then(() => showToast("📋 Codice copiato!")).catch(() => showToast("Codice: " + code));
+  }
+
+  if (!code) return null;
+  return (
+    <div className="family-code-box" style={{marginBottom:24}}>
+      <div style={{fontSize:12,fontWeight:600,color:"var(--text3)",textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>
+        {famName} — Codice famiglia
+      </div>
+      <div className="family-code">{code}</div>
+      <div className="family-code-hint">Condividi questo codice con i tuoi familiari per farli entrare</div>
+      <button className="copy-btn" onClick={copyCode} style={{marginTop:10}}>📋 Copia codice</button>
     </div>
   );
 }
@@ -693,6 +1019,10 @@ export default function App() {
   const [filter, setFilter]     = useState("all");
   const [subModal, setSubModal] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [showCreateFamily, setShowCreateFamily] = useState(false);
+  const [showJoinFamily, setShowJoinFamily] = useState(false);
+  const [familyName, setFamilyName] = useState("");
+  const [joinCode, setJoinCode] = useState("");
   const [invName, setInvName]   = useState("");
   const [invEmail, setInvEmail] = useState("");
   const [toast, setToast]       = useState({show:false,msg:""});
@@ -761,6 +1091,39 @@ export default function App() {
     loadData();
   }
 
+  async function removeMember(memberId) {
+    await sb.update("profiles", { family_id: null, role: "admin" }, { id: memberId }, user.token);
+    showToast("✅ Membro rimosso dalla famiglia");
+    loadData();
+  }
+
+  async function createFamily() {
+    if (!familyName.trim()) return;
+    const code = genFamilyCode(familyName);
+    const fam = await sb.insert("families", { name: familyName, code }, user.token);
+    const famData = Array.isArray(fam) ? fam[0] : fam;
+    if (!famData?.id) { showToast("❌ Errore nella creazione"); return; }
+    await sb.update("profiles", { family_id: famData.id, role: "admin" }, { id: user.id }, user.token);
+    setUser(prev => ({ ...prev, family_id: famData.id, role: "admin" }));
+    setShowCreateFamily(false);
+    setFamilyName("");
+    showToast("✅ Famiglia creata! Codice: " + code);
+    loadData();
+  }
+
+  async function joinFamily() {
+    if (!joinCode.trim()) return;
+    const fams = await sb.select("families", `code=eq.${joinCode.trim().toUpperCase()}`, user.token);
+    if (!Array.isArray(fams) || fams.length === 0) { showToast("❌ Codice non trovato — controlla e riprova"); return; }
+    const fam = fams[0];
+    await sb.update("profiles", { family_id: fam.id, role: "member" }, { id: user.id }, user.token);
+    setUser(prev => ({ ...prev, family_id: fam.id, role: "member" }));
+    setShowJoinFamily(false);
+    setJoinCode("");
+    showToast("✅ Sei entrato nella famiglia " + fam.name + "!");
+    loadData();
+  }
+
   function doLogout() { setUser(null); setSubs([]); setAllUsers([]); setAllSubs([]); setPage("dashboard"); }
 
   if (!user) return <><style>{S}</style><AuthScreen onLogin={u=>{setUser(u);setPage(u.isSuperAdmin?"admin":"dashboard");}}/></>;
@@ -775,7 +1138,7 @@ export default function App() {
 
   const navItems = user.isSuperAdmin
     ? [{id:"admin",icon:"👑",label:"Admin Dashboard"}]
-    : [{id:"dashboard",icon:"📊",label:"Dashboard"},{id:"family",icon:"👨‍👩‍👧",label:"Famiglia"},{id:"profile",icon:"👤",label:"Profilo"}];
+    : [{id:"dashboard",icon:"📊",label:"Dashboard"},{id:"savings",icon:"💡",label:"Risparmio"},{id:"family",icon:"👨‍👩‍👧",label:"Famiglia"},{id:"profile",icon:"👤",label:"Profilo"}];
 
   function SubRow({sub}) {
     const cat=getCatInfo(sub.category), cc=CAT_COLORS[sub.category]||CAT_COLORS.other;
@@ -791,7 +1154,7 @@ export default function App() {
           <div className="sub-meta">
             <span className="cat-pill" style={{background:cc.bg,color:cc.text}}>{cat.icon} {cat.label}</span>
             {sub.shared?<span className="badge-shared">Condiviso</span>:<span className="badge-priv">🔒 Privato</span>}
-            {owner&&<span className="owner-chip"><span className="o-dot" style={{background:owner.color||"#29ABE2"}}>{owner.avatar||"👤"}</span>{isOwn?"Tu":owner.name?.split(" ")[0]}</span>}
+            {owner&&<span className="owner-chip"><span className="o-dot" style={{background:owner.color||"#29ABE2",color:"#fff",fontSize:8,fontWeight:700}}>{getInitials(owner.name||"?")}</span>{isOwn?"Tu":owner.name?.split(" ")[0]}</span>}
             {sub.payment&&<span style={{color:"var(--text3)",fontSize:11}}>· {sub.payment}</span>}
           </div>
           {sub.usage_level&&<div className="usage-bar-wrap"><span className="usage-bar-emoji">{uc.emoji}</span><span className="usage-bar-track"><span className="usage-bar-fill" style={{width:(sub.usage_level/5*100)+"%",background:uc.color}}/></span><span className="usage-bar-lbl" style={{color:uc.color}}>{uc.short}</span></div>}
@@ -799,10 +1162,13 @@ export default function App() {
         <div className="cost-block">
           <div className="sub-cost">€{Number(sub.cost).toFixed(2)}</div>
           <div className="sub-freq">{getFreqLabel(sub.frequency)}</div>
-          {sub.frequency!=="monthly"&&<div className="sub-eq">€{toMonthly(sub.cost,sub.frequency).toFixed(2)}/mes</div>}
+          {sub.frequency!=="monthly"&&<div className="sub-eq">€{toMonthly(sub.cost,sub.frequency).toFixed(2)}/mese</div>}
         </div>
         <div className="acts" onClick={e=>e.stopPropagation()}>
-          {editable&&<><button className="ic-btn" onClick={()=>setSubModal(sub)}>✏️</button><button className="ic-btn del" onClick={()=>{if(window.confirm("Eliminare "+sub.name+"?"))deleteSub(sub.id);}}>🗑</button></>}
+          {editable&&(
+            <button className="ic-btn" title="Modifica o elimina" onClick={()=>setSubModal(sub)}>✏️</button>
+          )}
+          {!editable&&<div style={{width:32}}/>}
         </div>
       </div>
     );
@@ -818,12 +1184,12 @@ export default function App() {
           {navItems.map(n=><button key={n.id} className={"nav-btn"+(page===n.id?" on":"")} onClick={()=>setPage(n.id)}><span style={{fontSize:16,width:22,textAlign:"center"}}>{n.icon}</span>{n.label}</button>)}
           {!user.isSuperAdmin&&familyMembers.length>1&&(
             <><div className="nav-sep"/><div className="s-sec">Famiglia</div>
-            {familyMembers.map(m=><div key={m.id} className="s-member" onClick={()=>setPage("family")}><div className="m-av" style={{background:m.color||"#29ABE2"}}>{m.avatar||"👤"}</div><div><div className="m-name">{m.id===user.id?"Tu":m.name?.split(" ")[0]}</div><div className="m-role">{m.role==="admin"?"Admin":"Membro"}</div></div></div>)}</>
+            {familyMembers.map(m=><div key={m.id} className="s-member" onClick={()=>setPage("family")}><div className="m-av" style={{background:m.color||"#29ABE2",color:"#fff",fontSize:10,fontWeight:700}}>{getInitials(m.name||"?")}</div><div><div className="m-name">{m.id===user.id?"Tu":m.name?.split(" ")[0]}</div><div className="m-role">{m.role==="admin"?"Admin":"Membro"}</div></div></div>)}</>
           )}
           <div className="nav-sep"/>
           <div className="s-user">
-            <div className="u-av" style={{background:user.color||"#29ABE2"}}>{user.isSuperAdmin?"👑":getInitials(user.name)}</div>
-            <div><div className="u-name">{user.name?.split(" ")[0]}</div><div className="u-email">{user.email}</div></div>
+            <div className="u-av" style={{background:user.color||"#29ABE2",color:"#fff",fontSize:11,fontWeight:700}}>{getInitials(user.name||"?")}</div>
+            <div className="u-info"><div className="u-name">{user.name?.split(" ")[0]}</div><div className="u-email">{user.email}</div></div>
             <button className="logout-btn" onClick={doLogout}>Esci</button>
           </div>
         </aside>
@@ -831,25 +1197,28 @@ export default function App() {
         <main className="main">
           {page==="admin"&&<AdminPage allUsers={allUsers} allSubs={allSubs} token={user.token}/>}
 
+          {page==="savings"&&!user.isSuperAdmin&&<SavingsPage subs={subs} user={user}/>}
+
           {page==="dashboard"&&!user.isSuperAdmin&&(
             <>
               <div className="pg-eye">Benvenuto, {user.name?.split(" ")[0]}</div>
-              <div className="pg-title">I tuoi abbonamenti</div>
+              <div className="pg-title">Le tue spese ricorrenti</div>
+              <div style={{fontSize:13,color:"var(--text3)",marginBottom:24,marginTop:-18}}>Abbonamenti, utenze e tutti i pagamenti fissi</div>
               <div className="sum-row">
-                <div className="sum-card"><div className="sc-icon">💳</div><div className="sc-lbl">Famiglia/mese</div><div className="sc-val accent">€{totalMonthly.toFixed(0)}</div><div className="sc-sub">€{(totalMonthly*12).toFixed(0)}/anno</div></div>
+                <div className="sum-card"><div className="sc-icon">💳</div><div className="sc-lbl">Totale/mese</div><div className="sc-val accent">€{totalMonthly.toFixed(0)}</div><div className="sc-sub">€{(totalMonthly*12).toFixed(0)}/anno</div></div>
                 <div className="sum-card"><div className="sc-icon">👤</div><div className="sc-lbl">Miei costi</div><div className="sc-val">€{myMonthly.toFixed(0)}</div><div className="sc-sub">al mese</div></div>
                 <div className="sum-card"><div className="sc-icon">🤝</div><div className="sc-lbl">Condivisi</div><div className="sc-val">{sharedCount}</div><div className="sc-sub">con la famiglia</div></div>
                 <div className="sum-card"><div className="sc-icon">🔒</div><div className="sc-lbl">Privati</div><div className="sc-val">{privateCount}</div><div className="sc-sub">solo tuoi</div></div>
               </div>
               <div className="filter-row">
                 {[["all","Tutti"],["shared","🤝 Condivisi"],["private","🔒 Privati"]].map(([id,lbl])=><button key={id} className={"f-btn"+(filter===id?" on":"")} onClick={()=>setFilter(id)}>{lbl}</button>)}
-                <span className="f-count">{filteredSubs.length} abbonamenti</span>
+                <span className="f-count">{filteredSubs.length} voci</span>
               </div>
               <div className="sub-list">
-                {filteredSubs.length===0&&<div className="empty"><div className="empty-ic">📭</div><div className="empty-txt">Nessun abbonamento — aggiungine uno!</div></div>}
+                {filteredSubs.length===0&&<div className="empty"><div className="empty-ic">📭</div><div className="empty-txt">Nessuna spesa ricorrente — aggiungine una!</div></div>}
                 {filteredSubs.map(s=><SubRow key={s.id} sub={s}/>)}
               </div>
-              <button className="add-btn" onClick={()=>setSubModal("new")}><span style={{fontSize:18}}>+</span> Aggiungi abbonamento</button>
+              <button className="add-btn" onClick={()=>setSubModal("new")}><span style={{fontSize:18}}>+</span> Aggiungi spesa ricorrente</button>
             </>
           )}
 
@@ -857,19 +1226,70 @@ export default function App() {
             <>
               <div className="pg-eye">La tua famiglia</div>
               <div className="pg-title">Gestione famiglia</div>
-              <div className="fam-grid">
-                {familyMembers.map(m=>{
-                  const mS=subs.filter(s=>s.owner_id===m.id);
-                  const mM=mS.reduce((a,s)=>a+toMonthly(s.cost,s.frequency),0);
-                  return <div key={m.id} className="fam-card"><div className="fam-av" style={{background:m.color||"#29ABE2"}}>{m.avatar||"👤"}</div><div className={"fam-role"+(m.role==="member"?" mem":"")}>{m.role==="admin"?"Admin":"Membro"}</div><div className="fam-name">{m.name}{m.id===user.id?" (tu)":""}</div><div className="fam-email">{m.email}</div><div className="fam-stats"><div><div className="fs-val">{mS.length}</div><div className="fs-lbl">abbonamenti</div></div><div><div className="fs-val">€{mM.toFixed(0)}</div><div className="fs-lbl">/mese</div></div></div></div>;
-                })}
-                <div className="invite-card" onClick={()=>setShowInvite(true)}><div style={{fontSize:28,marginBottom:10,opacity:.4}}>➕</div><div style={{fontSize:13,color:"var(--text3)",fontWeight:500}}>Invita un membro</div></div>
-              </div>
-              <div className="pg-eye" style={{marginBottom:12}}>Abbonamenti condivisi</div>
-              <div className="sub-list">
-                {subs.filter(s=>s.shared).length===0&&<div className="empty"><div className="empty-ic">🤝</div><div className="empty-txt">Nessun abbonamento condiviso</div></div>}
-                {subs.filter(s=>s.shared).map(s=><SubRow key={s.id} sub={s}/>)}
-              </div>
+
+              {/* No family yet — show setup options */}
+              {!user.family_id && (
+                <>
+                  <div className="family-setup">
+                    <div className="family-setup-title">👨‍👩‍👧 Non sei ancora in una famiglia</div>
+                    <div className="family-setup-sub">Crea una nuova famiglia oppure unisciti a una esistente con il codice che ti ha condiviso un familiare.</div>
+                    <button className="btn-primary" style={{width:"auto",padding:"11px 24px",marginTop:4}} onClick={()=>setShowCreateFamily(true)}>
+                      ➕ Crea la tua famiglia
+                    </button>
+                    <div className="family-or"><div className="family-or-line"/><span className="family-or-txt">oppure</span><div className="family-or-line"/></div>
+                    <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+                      <input className="mfi" style={{maxWidth:200}} placeholder="Codice famiglia (es. ROSSI-2024)" value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase())} onKeyDown={e=>e.key==="Enter"&&joinFamily()}/>
+                      <button className="btn-outline" onClick={joinFamily}>Entra nella famiglia</button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Has family — show members and code */}
+              {user.family_id && (
+                <>
+                  {/* Show family code for sharing */}
+                  {familyMembers.length > 0 && (() => {
+                    const fam = familyMembers[0];
+                    return null; // code shown below via loadData
+                  })()}
+                  <FamilyCodeBox familyId={user.family_id} token={user.token} showToast={showToast}/>
+
+                  <div className="fam-grid">
+                    {familyMembers.map(m=>{
+                      const mS=subs.filter(s=>s.owner_id===m.id);
+                      const mM=mS.reduce((a,s)=>a+toMonthly(s.cost,s.frequency),0);
+                      const isMe = m.id===user.id;
+                      const canRemove = user.role==="admin" && !isMe;
+                      return (
+                        <div key={m.id} className="fam-card">
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                            <div className="fam-av" style={{background:m.color||"#29ABE2",color:"#fff",fontSize:16,fontWeight:700}}>{getInitials(m.name||"?")}</div>
+                            {canRemove&&(
+                              <button onClick={()=>{if(window.confirm("Rimuovere "+m.name+" dalla famiglia?"))removeMember(m.id);}}
+                                style={{border:"1px solid #FECDD3",background:"transparent",color:"#F43F5E",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>
+                                Rimuovi
+                              </button>
+                            )}
+                          </div>
+                          <div className={"fam-role"+(m.role==="member"?" mem":"")}>{m.role==="admin"?"Admin":"Membro"}</div>
+                          <div className="fam-name">{m.name}{isMe?" (tu)":""}</div>
+                          <div className="fam-email">{m.email}</div>
+                          <div className="fam-stats">
+                            <div><div className="fs-val">{mS.length}</div><div className="fs-lbl">voci</div></div>
+                            <div><div className="fs-val">€{mM.toFixed(0)}</div><div className="fs-lbl">/mese</div></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pg-eye" style={{marginBottom:12}}>Spese condivise</div>
+                  <div className="sub-list">
+                    {subs.filter(s=>s.shared).length===0&&<div className="empty"><div className="empty-ic">🤝</div><div className="empty-txt">Nessuna spesa condivisa</div></div>}
+                    {subs.filter(s=>s.shared).map(s=><SubRow key={s.id} sub={s}/>)}                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -907,6 +1327,40 @@ export default function App() {
             <div className="modal-acts">
               <button className="btn-m-sec" onClick={()=>setShowInvite(false)}>Annulla</button>
               <button className="btn-m-pri" disabled={!invName.trim()||!invEmail.trim()} onClick={()=>{showToast("📨 Link invito copiato per "+invName);setShowInvite(false);}}>Invia invito</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateFamily&&(
+        <div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setShowCreateFamily(false);}}>
+          <div className="modal">
+            <div className="modal-title">Crea la tua famiglia</div>
+            <div className="modal-sub">Scegli un nome per la tua famiglia. Riceverai un codice da condividere con i tuoi familiari.</div>
+            <div className="mb">
+              <div className="fl">Nome famiglia</div>
+              <input className="mfi" placeholder="es. Famiglia Rossi" value={familyName} onChange={e=>setFamilyName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&createFamily()}/>
+            </div>
+            <div className="modal-acts">
+              <button className="btn-m-sec" onClick={()=>setShowCreateFamily(false)}>Annulla</button>
+              <button className="btn-m-pri" disabled={!familyName.trim()} onClick={createFamily}>Crea famiglia</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showJoinFamily&&(
+        <div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setShowJoinFamily(false);}}>
+          <div className="modal">
+            <div className="modal-title">Unisciti a una famiglia</div>
+            <div className="modal-sub">Inserisci il codice che ti ha condiviso un tuo familiare.</div>
+            <div className="mb">
+              <div className="fl">Codice famiglia</div>
+              <input className="mfi" placeholder="es. ROSSI-2024" value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase())} onKeyDown={e=>e.key==="Enter"&&joinFamily()}/>
+            </div>
+            <div className="modal-acts">
+              <button className="btn-m-sec" onClick={()=>setShowJoinFamily(false)}>Annulla</button>
+              <button className="btn-m-pri" disabled={!joinCode.trim()} onClick={joinFamily}>Entra nella famiglia</button>
             </div>
           </div>
         </div>

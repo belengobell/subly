@@ -905,6 +905,8 @@ function SavingsPage({ subs, user }) {
     }, 3000);
   }
 
+  const [dismissed, setDismissed] = useState([]);
+
   const statusBadge = s => {
     if(s==="save")   return { cls:"badge-save", txt:"💰 Risparmio possibile" };
     if(s==="ok")     return { cls:"badge-ok",   txt:"✅ Prezzo in linea" };
@@ -953,13 +955,23 @@ function SavingsPage({ subs, user }) {
               <div className="ss-val">€{Number(analysis.totalSaving||0).toFixed(2)}</div>
               <div className="ss-sub">€{(Number(analysis.totalSaving||0)*12).toFixed(0)} all'anno se applichi tutti i suggerimenti</div>
             </div>
-            <button className="btn-analyze" style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"1.5px solid rgba(255,255,255,0.3)"}} onClick={runAnalysis}>
+            <button className="btn-analyze" style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"1.5px solid rgba(255,255,255,0.3)"}} onClick={()=>{setDismissed([]);runAnalysis();}}>
               🔄 Rianalizza
             </button>
           </div>
 
           <div className="analysis-wrap">
-            {(analysis.items||[]).map((item,i) => {
+            {dismissed.length > 0 && dismissed.length === (analysis.items||[]).length && (
+              <div className="empty" style={{background:"var(--white)",borderRadius:"var(--radius)",border:"1px solid var(--bor)"}}>
+                <div className="empty-ic">✅</div>
+                <div className="empty-txt">Hai ignorato tutti i suggerimenti</div>
+                <button onClick={()=>setDismissed([])} style={{marginTop:12,padding:"8px 18px",border:"1.5px solid var(--indigo)",borderRadius:8,background:"transparent",color:"var(--indigo)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>
+                  Mostra di nuovo
+                </button>
+              </div>
+            )}
+            {(analysis.items||[]).filter((_,i)=>!dismissed.includes(i)).map((item,i) => {
+              const origIdx = (analysis.items||[]).indexOf(item);
               const badge = statusBadge(item.status);
               return (
                 <div key={i} className="analysis-card">
@@ -970,6 +982,12 @@ function SavingsPage({ subs, user }) {
                       <div className="ac-cost">€{Number(item.currentCost||0).toFixed(2)}/mese attuale</div>
                     </div>
                     <span className={"ac-badge "+badge.cls}>{badge.txt}</span>
+                    <button onClick={()=>setDismissed(d=>[...d,origIdx])}
+                      style={{marginLeft:8,padding:"4px 10px",border:"1px solid var(--bor2)",borderRadius:8,background:"transparent",color:"var(--text3)",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif",whiteSpace:"nowrap",flexShrink:0,transition:"all .2s"}}
+                      onMouseEnter={e=>{e.target.style.borderColor="var(--red)";e.target.style.color="var(--red)";}}
+                      onMouseLeave={e=>{e.target.style.borderColor="var(--bor2)";e.target.style.color="var(--text3)";}}>
+                      ✕ Ignora
+                    </button>
                   </div>
 
                   <div className="ac-insight">{item.insight}</div>
